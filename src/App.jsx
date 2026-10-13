@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-const URL = "http://finances.lan:3000";
+const URL = "https://finances.docsnetwork.duckdns.org:3000";
 // Unified Mobile Autocomplete Text Input Component
 function AutocompleteInput({ placeholder, value, onChange }) {
   const [suggestions, setSuggestions] = useState([]);
@@ -275,7 +275,7 @@ export default function App() {
         />
 
         <AutocompleteInput
-          placeholder="From Account (e.g., expenses:food)"
+          placeholder="To Account (e.g., assets:chequing)"
           value={account1}
           onChange={setAccount1}
         />
@@ -297,7 +297,7 @@ export default function App() {
         />
 
         <AutocompleteInput
-          placeholder="To Account (e.g., assets:checking)"
+          placeholder="From Account (e.g., expenses:food)"
           value={account2}
           onChange={setAccount2}
         />
