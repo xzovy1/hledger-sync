@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-const URL = "https://finances.docsnetwork.duckdns.org";
+const URL = "http://axiomtek:3000";
 // Unified Mobile Autocomplete Text Input Component
 function AutocompleteInput({ placeholder, value, onChange }) {
   const [suggestions, setSuggestions] = useState([]);
