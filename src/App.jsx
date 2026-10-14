@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-const URL = "http://axiomtek:3000";
+const URL = "https://axiomtek:3000";
 // Unified Mobile Autocomplete Text Input Component
 function AutocompleteInput({ placeholder, value, onChange }) {
   const [suggestions, setSuggestions] = useState([]);
@@ -28,6 +28,7 @@ function AutocompleteInput({ placeholder, value, onChange }) {
       <input
         type="text"
         placeholder={placeholder}
+        autoCapitalize="none"
         value={value}
         onChange={handleInputChange}
         onFocus={() => value && handleInputChange({ target: { value } })}
