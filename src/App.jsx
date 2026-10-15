@@ -143,8 +143,8 @@ export default function App() {
       date: new Date().toISOString().split("T")[0], // Standard clean ISO timeline template
       description,
       postings: [
-        { account: account1, amount: amount ? `$${amount}` : "" },
-        { account: account2, amount: "" }, // Leave un-calculated for core auto-balancing runtime engines
+        { account: account1, amount: "" }, // Leave un-calculated for core auto-balancing runtime engines
+        { account: account2, amount: amount ? `$${amount}` : "" },
       ],
     };
 
@@ -284,7 +284,7 @@ export default function App() {
         <input
           type="number"
           step="0.01"
-          placeholder="Amount (\$)"
+          placeholder="Amount ($)"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           style={{
