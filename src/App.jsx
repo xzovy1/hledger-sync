@@ -1,21 +1,22 @@
-import React, { useState, useEffect } from "react";
-const URL = "https://hledger.docsnetwork.duckdns.org";
+import React, { useState, useEffect } from 'react';
+import { createRoot } from 'react-dom/client';
+import './App.css'; // Inject the structural mobile layout sheets
+const URL = "https://hledger.docsnetwork.duckdns.org"
+
 // Unified Mobile Autocomplete Text Input Component
 function AutocompleteInput({ placeholder, value, onChange }) {
   const [suggestions, setSuggestions] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
-  const allAccounts = JSON.parse(
-    localStorage.getItem("hledger_accounts") || "[]",
-  );
+  const allAccounts = JSON.parse(localStorage.getItem('hledger_accounts') || '[]');
 
   const handleInputChange = (e) => {
     const val = e.target.value;
     onChange(val);
 
     if (val.trim().length > 0) {
-      const filtered = allAccounts
-        .filter((acc) => acc.toLowerCase().includes(val.toLowerCase()))
-        .slice(0, 5); // Keep dropdown height minimal for iPhone viewports
+      const filtered = allAccounts.filter(acc => 
+        acc.toLowerCase().includes(val.toLowerCase())
+      ).slice(0, 5);
       setSuggestions(filtered);
       setShowDropdown(true);
     } else {
@@ -24,59 +25,25 @@ function AutocompleteInput({ placeholder, value, onChange }) {
   };
 
   return (
-    <div style={{ position: "relative", width: "100%" }}>
-      <input
-        type="text"
-        placeholder={placeholder}
-        autoCapitalize="none"
-        value={value}
+    <div className="autocomplete-wrapper">
+      <input 
+        type="text" 
+        placeholder={placeholder} 
+        value={value} 
         onChange={handleInputChange}
         onFocus={() => value && handleInputChange({ target: { value } })}
         onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
-        required
-        style={{
-          padding: "14px",
-          fontSize: "16px",
-          width: "100%",
-          boxSizing: "border-box",
-          borderRadius: "8px",
-          border: "1px solid #ccc",
-          backgroundColor: "#fff",
-          WebkitAppearance: "none",
-        }}
+        required 
+        className="mobile-input"
       />
       {showDropdown && suggestions.length > 0 && (
-        <ul
-          style={{
-            position: "absolute",
-            top: "100%",
-            left: 0,
-            right: 0,
-            background: "#fff",
-            border: "1px solid #ccc",
-            margin: "4px 0 0 0",
-            padding: 0,
-            listStyle: "none",
-            zIndex: 1000,
-            borderRadius: "8px",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-          }}
-        >
+        <ul className="autocomplete-dropdown">
           {suggestions.map((acc, index) => (
-            <li
+            <li 
               key={index}
-              onMouseDown={() => {
-                onChange(acc);
-                setShowDropdown(false);
-              }}
-              style={{
-                padding: "14px",
-                borderBottom:
-                  index === suggestions.length - 1 ? "none" : "1px solid #eee",
-                cursor: "pointer",
-                fontSize: "14px",
-                color: "#333",
-              }}
+              onMouseDown={() => { onChange(acc); setShowDropdown(false); }}
+              onTouchEnd={() => { onChange(acc); setShowDropdown(false); }}
+              className="autocomplete-row"
             >
               {acc}
             </li>
@@ -89,29 +56,27 @@ function AutocompleteInput({ placeholder, value, onChange }) {
 
 // Master Mobile Application Workspace
 export default function App() {
-  const [description, setDescription] = useState("");
-  const [account1, setAccount1] = useState("");
-  const [amount, setAmount] = useState("");
-  const [account2, setAccount2] = useState("");
-  const [queue, setQueue] = useState(() =>
-    JSON.parse(localStorage.getItem("tx_queue") || "[]"),
-  );
+  const [description, setDescription] = useState('');
+  const [account1, setAccount1] = useState('');
+  const [amount, setAmount] = useState('');
+  const [account2, setAccount2] = useState('');
+  const [queue, setQueue] = useState(() => JSON.parse(localStorage.getItem('tx_queue') || '[]'));
   const [syncing, setSyncing] = useState(false);
+  
+  const [showQueueList, setShowQueueList] = useState(false);
+  const [editingIndex, setEditingIndex] = useState(null);
 
-  // Sync state mutation tracking across native storage spaces
   useEffect(() => {
-    localStorage.setItem("tx_queue", JSON.stringify(queue));
+    localStorage.setItem('tx_queue', JSON.stringify(queue));
   }, [queue]);
 
   const fetchAccounts = async () => {
     try {
       const res = await fetch(`${URL}/api/accounts`);
       const data = await res.json();
-      localStorage.setItem("hledger_accounts", JSON.stringify(data));
+      localStorage.setItem('hledger_accounts', JSON.stringify(data));
     } catch (e) {
-      console.log(
-        "Device network context offline. Leveraging cached accounts schema.",
-      );
+      console.log("Device network context offline. Leveraging cached accounts schema.");
     }
   };
 
@@ -120,18 +85,14 @@ export default function App() {
   }, []);
 
   const handleDescriptionBlur = async () => {
-    if (!description.trim()) return;
+    if (!description.trim() || editingIndex !== null) return;
     try {
-      const res = await fetch(
-        `${URL}/api/suggest-accounts?desc=${encodeURIComponent(description)}`,
-      );
+      const res = await fetch(`${URL}/api/suggest-accounts?desc=${encodeURIComponent(description)}`);
       const suggestions = await res.json();
       if (suggestions.account1 && !account1) setAccount1(suggestions.account1);
       if (suggestions.account2 && !account2) setAccount2(suggestions.account2);
     } catch (e) {
-      console.log(
-        "Unable to trace transactional parameters while disconnected.",
-      );
+      console.log("Unable to trace parameters while disconnected.");
     }
   };
 
@@ -139,20 +100,55 @@ export default function App() {
     e.preventDefault();
     if (!description || !account1) return;
 
+    const formattedAmount = amount ? (amount.startsWith('\$') ? amount : `-$${amount}`) : '';
+
     const newTx = {
-      date: new Date().toISOString().split("T")[0], // Standard clean ISO timeline template
+      date: editingIndex !== null ? queue[editingIndex].date : new Date().toISOString().split('T')[0],
       description,
       postings: [
-        { account: account1, amount: "" }, // Leave un-calculated for core auto-balancing runtime engines
-        { account: account2, amount: amount ? `$${amount}` : "" },
-      ],
+        { account: account1, amount: formattedAmount },
+        { account: account2, amount: '' }
+      ]
     };
 
-    setQueue([...queue, newTx]);
-    setDescription("");
-    setAmount("");
-    setAccount1("");
-    setAccount2("");
+    if (editingIndex !== null) {
+      const updatedQueue = [...queue];
+      updatedQueue[editingIndex] = newTx;
+      setQueue(updatedQueue);
+      setEditingIndex(null);
+    } else {
+      setQueue([...queue, newTx]);
+    }
+
+    setDescription('');
+    setAmount('');
+    setAccount1('');
+    setAccount2('');
+  };
+
+  const startEdit = (index) => {
+    const tx = queue[index];
+    setEditingIndex(index);
+    setDescription(tx.description);
+    setAccount1(tx.postings[0].account);
+    setAmount(tx.postings[0].amount.replace('\$', ''));
+    setAccount2(tx.postings[1].account);
+    setShowQueueList(false);
+  };
+
+  const removeEntry = (index, e) => {
+    e.stopPropagation();
+    const filteredQueue = queue.filter((_, i) => i !== index);
+    setQueue(filteredQueue);
+    if (editingIndex === index) cancelEdit();
+  };
+
+  const cancelEdit = () => {
+    setEditingIndex(null);
+    setDescription('');
+    setAmount('');
+    setAccount1('');
+    setAccount2('');
   };
 
   const handleSync = async () => {
@@ -162,165 +158,107 @@ export default function App() {
     try {
       for (const tx of queue) {
         await fetch(`${URL}/api/add`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(tx),
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(tx)
         });
       }
       setQueue([]);
       await fetchAccounts();
-      alert("All stored transactions processed into master ledger!");
+      alert('All stored transactions processed into master ledger!');
     } catch (err) {
-      alert(
-        "Sync runtime execution failed. Confirm your local Wi-Fi connectivity context.",
-      );
+      alert('Sync runtime execution failed. Confirm your local Wi-Fi connectivity context.');
     } finally {
       setSyncing(false);
     }
   };
 
   return (
-    <div
-      style={{
-        padding: "24px 16px",
-        fontFamily:
-          '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-        maxWidth: "400px",
-        margin: "0 auto",
-        backgroundColor: "#fff",
-        minHeight: "100vh",
-        boxSizing: "border-box",
-      }}
-    >
-      <h2
-        style={{
-          fontSize: "24px",
-          fontWeight: "700",
-          letterSpacing: "-0.5px",
-          marginBottom: "4px",
-          color: "#1d1d1f",
-        }}
-      >
-        Fast Ledger Entry
-      </h2>
-      <p
-        style={{
-          color: "#86868b",
-          fontSize: "14px",
-          marginTop: "0",
-          marginBottom: "24px",
-        }}
-      >
-        Queues offline, processes over home network pools.
-      </p>
-
-      <div
-        style={{
-          backgroundColor: "#f5f5f7",
-          padding: "16px",
-          borderRadius: "12px",
-          marginBottom: "24px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <div>
-          <span style={{ fontSize: "15px", color: "#515154" }}>
-            Pending Queue:{" "}
-          </span>
-          <strong style={{ fontSize: "20px", color: "#1d1d1f" }}>
-            {queue.length}
-          </strong>
-        </div>
-        {queue.length > 0 && (
-          <button
-            onClick={handleSync}
-            disabled={syncing}
-            style={{
-              backgroundColor: "#0071e3",
-              color: "#fff",
-              border: "none",
-              borderRadius: "20px",
-              padding: "8px 16px",
-              fontSize: "14px",
-              fontWeight: "600",
-              cursor: "pointer",
-              transition: "opacity 0.2s",
-            }}
+    <div className="ledger-container">
+      <h2 className="ledger-title">Fast Ledger Entry</h2>
+      <p className="ledger-subtitle">Queues offline, processes over home network pools.</p>
+      
+      <div className="queue-panel">
+        <div className="queue-header-row">
+          <div 
+            onClick={() => queue.length > 0 && setShowQueueList(!showQueueList)} 
+            className={`queue-trigger ${queue.length > 0 ? 'active-list' : ''}`}
           >
-            {syncing ? "Syncing..." : "Sync Now"}
-          </button>
+            <span className="queue-label">Pending Queue: </span>
+            <strong className="queue-count">{queue.length}</strong>
+            {queue.length > 0 && <span className="queue-toggle-hint">{showQueueList ? ' ▲ Hide' : ' ▼ View'}</span>}
+          </div>
+          {queue.length > 0 && !showQueueList && (
+            <button onClick={handleSync} disabled={syncing} className="sync-btn">
+              {syncing ? 'Syncing...' : 'Sync Now'}
+            </button>
+          )}
+        </div>
+
+        {showQueueList && queue.length > 0 && (
+          <div className="expanded-list-container">
+            {queue.map((tx, idx) => (
+              <div key={idx} onClick={() => startEdit(idx)} className="queue-item-card">
+                <div className="queue-item-details">
+                  <span className="queue-item-desc">{tx.description}</span>
+                  <span className="queue-item-path">
+                    {tx.postings[0].account.split(':').pop()} → {tx.postings[1].account.split(':').pop() || 'auto'}
+                  </span>
+                </div>
+                <div className="queue-item-meta">
+                  <strong className="queue-item-val">{tx.postings[0].amount || '—'}</strong>
+                  <button onClick={(e) => removeEntry(idx, e)} className="delete-item-btn">×</button>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
 
-      <form
-        onSubmit={handleSubmit}
-        style={{ display: "flex", flexDirection: "column", gap: "16px" }}
-      >
-        <input
-          type="text"
-          placeholder="Description (e.g., Coffee Shop)"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
+      <form onSubmit={handleSubmit} className="form-layout">
+        {editingIndex !== null && (
+          <div className="editing-status-banner">
+            <span>Editing Item #{editingIndex + 1}</span>
+            <button type="button" onClick={cancelEdit} className="cancel-edit-btn">Cancel</button>
+          </div>
+        )}
+
+        <input 
+          type="text" 
+          placeholder="Description (e.g., Starbucks)" 
+          value={description} 
+          onChange={e => setDescription(e.target.value)} 
           onBlur={handleDescriptionBlur}
-          required
-          style={{
-            padding: "14px",
-            fontSize: "16px",
-            borderRadius: "8px",
-            border: "1px solid #ccc",
-            backgroundColor: "#fff",
-            WebkitAppearance: "none",
-          }}
+          required 
+          className="mobile-input"
         />
-
-        <AutocompleteInput
-          placeholder="To Account (e.g., assets:chequing)"
-          value={account1}
-          onChange={setAccount1}
+        
+        <AutocompleteInput placeholder="From Account (e.g., expenses:food:groceries)" value={account1} onChange={setAccount1} />
+        
+        <input 
+          type="number" 
+          step="0.01" 
+          placeholder="Amount ($)" 
+          value={amount} 
+          onChange={e => setAmount(e.target.value)} 
+          className="mobile-input"
         />
-
-        <input
-          type="number"
-          step="0.01"
-          placeholder="Amount ($)"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          style={{
-            padding: "14px",
-            fontSize: "16px",
-            borderRadius: "8px",
-            border: "1px solid #ccc",
-            backgroundColor: "#fff",
-            WebkitAppearance: "none",
-          }}
-        />
-
-        <AutocompleteInput
-          placeholder="From Account (e.g., expenses:food)"
-          value={account2}
-          onChange={setAccount2}
-        />
-
-        <button
-          type="submit"
-          style={{
-            padding: "16px",
-            backgroundColor: "#1d1d1f",
-            color: "#fff",
-            fontSize: "16px",
-            fontWeight: "600",
-            border: "none",
-            borderRadius: "12px",
-            cursor: "pointer",
-            marginTop: "12px",
-            WebkitAppearance: "none",
-          }}
+        
+        <AutocompleteInput placeholder="To Account (e.g., assets:chequing)" value={account2} onChange={setAccount2} />
+        
+        <button 
+          type="submit" 
+          className={`submit-btn ${editingIndex !== null ? 'editing-mode' : ''}`}
         >
-          Save Locally
+          {editingIndex !== null ? 'Apply Changes to Queue' : 'Save Locally'}
         </button>
       </form>
     </div>
   );
+}
+
+const container = document.getElementById('root');
+if (container) {
+  const root = createRoot(container);
+  root.render(<App />);
 }

@@ -1,42 +1,280 @@
-#root {
-  max-width: 1280px;
+/* App Container and Typographic Normalization */
+.ledger-container {
+  padding: 24px 16px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  max-width: 400px;
   margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  background-color: #fff;
+  min-height: 100vh;
+  box-sizing: border-box;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.ledger-title {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin-bottom: 4px;
+  color: #1d1d1f;
 }
 
-@keyframes logo-spin {
+.ledger-subtitle {
+  color: #86868b;
+  font-size: 14px;
+  margin-top: 0;
+  margin-bottom: 24px;
+}
+
+/* Form inputs & general interactive fields */
+.form-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mobile-input {
+  padding: 14px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background-color: #fff;
+  box-sizing: border-box;
+  width: 100%;
+  -webkit-appearance: none;
+}
+
+.mobile-input:focus {
+  outline: none;
+  border-color: #0071e3;
+  box-shadow: 0 0 0 2px rgba(0, 113, 227, 0.15);
+}
+
+/* Submission action triggers */
+.submit-btn {
+  padding: 16px;
+  background-color: #1d1d1f;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  margin-top: 12px;
+  -webkit-appearance: none;
+  transition: opacity 0.1s ease;
+}
+
+.submit-btn:active {
+  opacity: 0.8;
+}
+
+.submit-btn.editing-mode {
+  background-color: #bf5af2;
+}
+
+/* Main Dashboard Queue Panel */
+.queue-panel {
+  background-color: #f5f5f7;
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+}
+
+.queue-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.queue-trigger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.queue-trigger.active-list {
+  cursor: pointer;
+}
+
+.queue-label {
+  font-size: 15px;
+  color: #515154;
+}
+
+.queue-count {
+  font-size: 20px;
+  color: #1d1d1f;
+}
+
+.queue-trigger.active-list .queue-count {
+  color: #0071e3;
+  text-decoration: underline;
+}
+
+.queue-toggle-hint {
+  font-size: 12px;
+  color: #86868b;
+}
+
+.sync-btn {
+  background-color: #0071e3;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Collapsible list elements */
+.expanded-list-container {
+  margin-top: 16px;
+  border-top: 1px solid #e5e5ea;
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.queue-item-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #fff;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #e5e5ea;
+  cursor: pointer;
+}
+
+.queue-item-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 75%;
+}
+
+.queue-item-desc {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1d1d1f;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.queue-item-path {
+  font-size: 11px;
+  color: #86868b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.queue-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.queue-item-val {
+  font-size: 14px;
+  color: #1d1d1f;
+}
+
+.delete-item-btn {
+  background-color: transparent;
+  color: #ff3b30;
+  border: none;
+  font-size: 22px;
+  padding: 0 4px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+/* Autocomplete Suggestion Fields */
+.autocomplete-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.autocomplete-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #ccc;
+  margin: 4px 0 0 0;
+  padding: 0;
+  list-style: none;
+  z-index: 1000;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.autocomplete-row {
+  padding: 14px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+}
+
+.autocomplete-row:last-child {
+  border-bottom: none;
+}
+
+/* Editing status banners */
+.editing-status-banner {
+  font-size: 14px;
+  color: #bf5af2;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cancel-edit-btn {
+  background: none;
+  border: none;
+  color: #0071e3;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+
+/* Auto-Dismissing Toast Notification System */
+.toast-notification {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #1d1d1f;
+  color: #fff;
+  padding: 14px 24px;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  z-index: 9999;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: slideUpFade 0.3s ease-out forwards;
+}
+
+.toast-notification.error-toast {
+  background-color: #ff3b30;
+}
+
+@keyframes slideUpFade {
   from {
-    transform: rotate(0deg);
+    bottom: 0px;
+    opacity: 0;
   }
   to {
-    transform: rotate(360deg);
+    bottom: 24px;
+    opacity: 1;
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
-}
