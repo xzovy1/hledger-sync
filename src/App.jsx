@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import './App.css'; // Inject the structural mobile layout sheets
-const URL = "https://hledger.docsnetwork.duckdns.org"
+
+const URL = "https://hledger.docsnetwork.duckdns.org";
 
 // Unified Mobile Autocomplete Text Input Component
 function AutocompleteInput({ placeholder, value, onChange }) {
@@ -65,10 +66,26 @@ export default function App() {
   
   const [showQueueList, setShowQueueList] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
+  
+  const [notification, setNotification] = useState({ message: '', isError: false });
 
   useEffect(() => {
     localStorage.setItem('tx_queue', JSON.stringify(queue));
   }, [queue]);
+
+  const showToast = (message, isError = false) => {
+    setNotification({ message, isError });
+  };
+
+  useEffect(() => {
+    if (!notification.message) return;
+    
+    const timer = setTimeout(() => {
+      setNotification({ message: '', isError: false });
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [notification]);
 
   const fetchAccounts = async () => {
     try {
@@ -96,7 +113,7 @@ export default function App() {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!description || !account1) return;
 
@@ -116,8 +133,26 @@ export default function App() {
       updatedQueue[editingIndex] = newTx;
       setQueue(updatedQueue);
       setEditingIndex(null);
+      showToast('Changes saved to queue.');
     } else {
-      setQueue([...queue, newTx]);
+      try {
+        const response = await fetch(`${URL}/api/add`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newTx)
+        });
+
+        if (response.ok) {
+          showToast('Directly saved to ledger!');
+          fetchAccounts(); 
+        } else {
+          setQueue([...queue, newTx]);
+          showToast('Saved locally (Server error).');
+        }
+      } catch (err) {
+        setQueue([...queue, newTx]);
+        showToast('Saved locally (Offline).');
+      }
     }
 
     setDescription('');
@@ -131,7 +166,7 @@ export default function App() {
     setEditingIndex(index);
     setDescription(tx.description);
     setAccount1(tx.postings[0].account);
-    setAmount(tx.postings[0].amount.replace('\$', ''));
+    setAmount(tx.postings[0].amount.replace('\$', '').replace('-', ''));
     setAccount2(tx.postings[1].account);
     setShowQueueList(false);
   };
@@ -141,6 +176,7 @@ export default function App() {
     const filteredQueue = queue.filter((_, i) => i !== index);
     setQueue(filteredQueue);
     if (editingIndex === index) cancelEdit();
+    showToast('Removed from queue.');
   };
 
   const cancelEdit = () => {
@@ -165,9 +201,9 @@ export default function App() {
       }
       setQueue([]);
       await fetchAccounts();
-      alert('All stored transactions processed into master ledger!');
+      showToast('All transactions processed into ledger!');
     } catch (err) {
-      alert('Sync runtime execution failed. Confirm your local Wi-Fi connectivity context.');
+      showToast('Sync execution failed. Verify connection.', true);
     } finally {
       setSyncing(false);
     }
@@ -238,7 +274,7 @@ export default function App() {
         <input 
           type="number" 
           step="0.01" 
-          placeholder="Amount ($)" 
+          placeholder="Amount (\$)" 
           value={amount} 
           onChange={e => setAmount(e.target.value)} 
           className="mobile-input"
@@ -250,15 +286,21 @@ export default function App() {
           type="submit" 
           className={`submit-btn ${editingIndex !== null ? 'editing-mode' : ''}`}
         >
-          {editingIndex !== null ? 'Apply Changes to Queue' : 'Save Locally'}
+          {editingIndex !== null ? 'Apply Changes to Queue' : 'Save Entry'}
         </button>
       </form>
+
+      {notification.message && (
+        <div className={`toast-notification ${notification.isError ? 'error-toast' : ''}`}>
+          {notification.message}
+        </div>
+      )}
     </div>
   );
 }
 
-const container = document.getElementById('root');
-if (container) {
-  const root = createRoot(container);
-  root.render(<App />);
-}
+// const container = document.getElementById('root');
+// if (container) {
+//   const root = createRoot(container);
+//   root.render(<App />);
+// }

@@ -39,7 +39,7 @@
   background-color: #fff;
   box-sizing: border-box;
   width: 100%;
-  -webkit-appearance: none;
+  /* -webkit-appearance: none; */
 }
 
 .mobile-input:focus {
@@ -59,7 +59,7 @@
   border-radius: 12px;
   cursor: pointer;
   margin-top: 12px;
-  -webkit-appearance: none;
+  /* -webkit-appearance: none; */
   transition: opacity 0.1s ease;
 }
 
@@ -256,15 +256,16 @@
   border-radius: 24px;
   font-size: 14px;
   font-weight: 500;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
   z-index: 9999;
   white-space: nowrap;
   pointer-events: none;
   animation: slideUpFade 0.3s ease-out forwards;
 }
-
-.toast-notification.error-toast {
-  background-color: #ff3b30;
+.toast-notification.error-toast { background-color: #ff3b30; }
+@keyframes slideUpFade {
+  from { bottom: 0px; opacity: 0; }
+  to { bottom: 24px; opacity: 1; }
 }
 
 @keyframes slideUpFade {
