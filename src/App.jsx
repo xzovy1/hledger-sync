@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { createRoot } from 'react-dom/client';
-import './App.css'; // Inject the structural mobile layout sheets
+import './App.css';
 
 const URL = "https://hledger.docsnetwork.duckdns.org";
 
@@ -269,18 +268,19 @@ export default function App() {
           className="mobile-input"
         />
         
-        <AutocompleteInput placeholder="From Account (e.g., expenses:food:groceries)" value={account1} onChange={setAccount1} />
+        <AutocompleteInput placeholder="From Account (e.g., assets:chequing)" value={account1} onChange={setAccount1} />
         
         <input 
           type="number" 
           step="0.01" 
-          placeholder="Amount (\$)" 
+          placeholder="Amount ($)" 
           value={amount} 
           onChange={e => setAmount(e.target.value)} 
           className="mobile-input"
+          required
         />
         
-        <AutocompleteInput placeholder="To Account (e.g., assets:chequing)" value={account2} onChange={setAccount2} />
+        <AutocompleteInput placeholder="To Account (e.g., expenses:food:groceries)" value={account2} onChange={setAccount2} />
         
         <button 
           type="submit" 
@@ -298,9 +298,3 @@ export default function App() {
     </div>
   );
 }
-
-// const container = document.getElementById('root');
-// if (container) {
-//   const root = createRoot(container);
-//   root.render(<App />);
-// }
