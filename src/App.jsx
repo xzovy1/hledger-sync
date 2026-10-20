@@ -210,8 +210,8 @@ export default function App() {
 
   return (
     <div className="ledger-container">
-      <h2 className="ledger-title">Fast Ledger Entry</h2>
-      <p className="ledger-subtitle">Queues offline, processes over home network pools.</p>
+      <h2 className="ledger-title">Hledger Entry</h2>
+      <p className="ledger-subtitle">Queues offline, processes over home network.</p>
       
       <div className="queue-panel">
         <div className="queue-header-row">
